@@ -44,7 +44,7 @@ numeric_pipe = Pipeline(
 categ_pipe = Pipeline(
     steps=[
         ('imputer', SimpleImputer(strategy='most_frequent')),
-        ('scaler', OneHotEncoder())
+        ('scaler', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
     ]
 )
 
@@ -62,11 +62,11 @@ x_val_transformed = transforme.transform(x_val)
 logging.info(f"Размер X_train после обработки: {x_train_transformed.shape}")
 logging.info(f"Размер X_val после обработки: {x_val_transformed.shape}")
 
-x_train_tensor = torch.tensor(x_train_transformed, dtype=torch.long)
+x_train_tensor = torch.tensor(x_train_transformed, dtype=torch.float32)
 x_test_tensor = torch.tensor(x_val_transformed, dtype=torch.float32)
 
-y_train_tensor = torch.tensor(y_train, dtype=torch.float32)
-y_test_tensor = torch.tensor(y_val, dtype=torch.float32)
+y_train_tensor = torch.tensor(y_train.values, dtype=torch.float32).unsqueeze(1)
+y_test_tensor = torch.tensor(y_val.values, dtype=torch.float32).unsqueeze(1)
 
 class TabularMLP(nn.Module):
     def __init__(self):
@@ -85,5 +85,8 @@ class TabularMLP(nn.Module):
     
 model = TabularMLP()
 
-criterion = torch.nn.BCEWithLogitsLoss()
+pos_weight = (y_train == 0).sum() / (y_train == 1).sum()
+logging.info(f"Вес положительного класса (pos_weight): {pos_weight}")
+
+criterion = torch.nn.BCEWithLogitsLoss(pos_weight=torch.tensor([pos_weight]))
 optimizer = torch.optim.AdamW(model.parameters(), lr = 1e-3)
