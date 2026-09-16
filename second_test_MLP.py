@@ -109,7 +109,7 @@ val_loader = DataLoader(
     batch_size=64    
 )
 
-EPOCHS = 40
+EPOCHS = 30
 
 for epoch in range(EPOCHS):
     train_loss = 0.0
@@ -128,6 +128,10 @@ for epoch in range(EPOCHS):
     
     model.eval()
     val_loss = 0.0
+    
+    all_val_probs = []
+    all_val_targets = []
+    
     with torch.no_grad():
         for batch_x_val, batch_y_val in val_loader:
             outputs_val = model(batch_x_val)
@@ -135,6 +139,15 @@ for epoch in range(EPOCHS):
             
             val_loss += loss_v.item()
             
+            probs = torch.sigmoid(outputs_val).cpu().numpy()
+            all_val_probs.extend(probs)
+            all_val_targets.extend(batch_y_val.cpu().numpy())
+            
         avg_val_loss = val_loss / len(val_loader)
+        val_roc_auc = roc_auc_score(all_val_targets, all_val_probs)
         
-logging.info(f"Avg_train_loss : {avg_train_loss} | Avg_val_loss : {avg_val_loss}")
+        if (epoch + 1) % 10 == 0:
+            logging.info(f"Эпоха: {epoch+1}/{EPOCHS} | Avg_train_loss : {avg_train_loss:.3f} | Avg_val_loss : {avg_val_loss:.3f} | Val ROC-AUC score : {val_roc_auc:.3f} ")
+
+
+torch.save(model.state_dict(), "BestModel_MLP.pth")
