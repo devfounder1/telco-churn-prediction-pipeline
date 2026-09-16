@@ -10,6 +10,7 @@ from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
+from sklearn.metrics import roc_auc_score
 
 logging.basicConfig(level = logging.INFO, format='%(asctime)s - %(levelname)s : %(message)s')
 np.random.seed(42)
@@ -44,7 +45,7 @@ numeric_pipe = Pipeline(
 categ_pipe = Pipeline(
     steps=[
         ('imputer', SimpleImputer(strategy='most_frequent')),
-        ('scaler', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
+        ('encoder', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
     ]
 )
 
@@ -63,10 +64,10 @@ logging.info(f"Размер X_train после обработки: {x_train_tran
 logging.info(f"Размер X_val после обработки: {x_val_transformed.shape}")
 
 x_train_tensor = torch.tensor(x_train_transformed, dtype=torch.float32)
-x_test_tensor = torch.tensor(x_val_transformed, dtype=torch.float32)
+x_val_tensor = torch.tensor(x_val_transformed, dtype=torch.float32)
 
 y_train_tensor = torch.tensor(y_train.values, dtype=torch.float32).unsqueeze(1)
-y_test_tensor = torch.tensor(y_val.values, dtype=torch.float32).unsqueeze(1)
+y_val_tensor = torch.tensor(y_val.values, dtype=torch.float32).unsqueeze(1)
 
 class TabularMLP(nn.Module):
     def __init__(self):
@@ -90,3 +91,50 @@ logging.info(f"Вес положительного класса (pos_weight): {p
 
 criterion = torch.nn.BCEWithLogitsLoss(pos_weight=torch.tensor([pos_weight]))
 optimizer = torch.optim.AdamW(model.parameters(), lr = 1e-3)
+
+# Переводим в тензоры 
+train_dataset = TensorDataset(x_train_tensor, y_train_tensor)
+val_dataset = TensorDataset(x_val_tensor, y_val_tensor)
+
+# Делаем Loaderы 
+train_loader = DataLoader(
+    dataset=train_dataset,
+    shuffle=True,
+    batch_size=64,
+)
+
+val_loader = DataLoader(
+    dataset=val_dataset,
+    shuffle=False,
+    batch_size=64    
+)
+
+EPOCHS = 40
+
+for epoch in range(EPOCHS):
+    train_loss = 0.0
+    model.train()
+    for batch_x, batch_y in train_loader:
+        
+        optimizer.zero_grad()
+        outputs = model(batch_x)
+        loss = criterion(outputs, batch_y)
+        loss.backward()
+        optimizer.step()
+
+        train_loss += loss.item()
+    
+    avg_train_loss = train_loss / len(train_loader)
+    
+    model.eval()
+    val_loss = 0.0
+    with torch.no_grad():
+        for batch_x_val, batch_y_val in val_loader:
+            outputs_val = model(batch_x_val)
+            loss_v = criterion(outputs_val, batch_y_val)
+            
+            val_loss += loss_v.item()
+            
+        avg_val_loss = val_loss / len(val_loader)
+        
+logging.info(f"Avg_train_loss : {avg_train_loss} | Avg_val_loss : {avg_val_loss}")
