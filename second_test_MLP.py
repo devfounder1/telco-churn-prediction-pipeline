@@ -109,7 +109,12 @@ val_loader = DataLoader(
     batch_size=64    
 )
 
-EPOCHS = 30
+EPOCHS = 100
+PATIENCE = 15
+
+best_model_state = None
+epochs_no_improve = 0
+best_val_auc = 0.0
 
 for epoch in range(EPOCHS):
     train_loss = 0.0
@@ -146,8 +151,18 @@ for epoch in range(EPOCHS):
         avg_val_loss = val_loss / len(val_loader)
         val_roc_auc = roc_auc_score(all_val_targets, all_val_probs)
         
+        if val_roc_auc > best_val_auc:
+            best_val_auc = val_roc_auc
+            epochs_no_improve = 0
+            torch.save(model.state_dict(), "BestModel_MLP.pth")
+        else: 
+            epochs_no_improve += 1
+
+        if epochs_no_improve >= PATIENCE:
+            logging.info(f" Ранняя остановка на эпохе {epoch+1}. Лучший Val ROC-AUC: {best_val_auc:.4f}")
+            model.load_state_dict(torch.load("BestModel_MLP.pth"))
+            break    
+        
         if (epoch + 1) % 10 == 0:
             logging.info(f"Эпоха: {epoch+1}/{EPOCHS} | Avg_train_loss : {avg_train_loss:.3f} | Avg_val_loss : {avg_val_loss:.3f} | Val ROC-AUC score : {val_roc_auc:.3f} ")
 
-
-torch.save(model.state_dict(), "BestModel_MLP.pth")
