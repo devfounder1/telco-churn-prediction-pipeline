@@ -27,12 +27,14 @@ logging.info("Загрузка лучших весов модели ...")
 
 model = TabularMLP()
 try:
-    model.load_state_dict(torch.load("BestModel_MLP.pth", map_location='mps', weights_only=True))
+    model.load_state_dict(torch.load("BestModel_MLP.pth", map_location='cpu', weights_only=True))
     logging.info("Модель успешно загружена !!!")
 except Exception as e: 
     logging.error("Модель не была загружена, ошибка !!!")
     raise e
 
 model.eval()
+dummy_input = torch.randn(1, 44, dtype=torch.float32)
+
 
 
