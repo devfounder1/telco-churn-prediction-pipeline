@@ -36,7 +36,7 @@ try:
     
     model = TabularMLP()
     
-    model.load_state_dict(torch.load("BestModel_MLP.pth", map_location='mps', weights_only=True))
+    model.load_state_dict(torch.load("BestModel_MLP.pth", map_location='cpu', weights_only=True))
     model.eval()
     
     logging.info("Все артефакты успешно загружены! ")

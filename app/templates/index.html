@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telco Churn Prediction</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+        
+        .form-group input,
+        .form-group select {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn-predict {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .btn-predict:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-predict:active {
+            transform: translateY(0);
+        }
+        
+        .result {
+            margin-top: 30px;
+            padding: 30px;
+            border-radius: 10px;
+            display: none;
+            animation: slideIn 0.5s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .result.churn {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fd79a8 100%);
+            border-left: 5px solid #d63031;
+        }
+        
+        .result.no-churn {
+            background: linear-gradient(135deg, #55efc4 0%, #00b894 100%);
+            border-left: 5px solid #00b894;
+        }
+        
+        .result h2 {
+            margin-bottom: 20px;
+            color: #2d3436;
+        }
+        
+        .probability-container {
+            margin: 20px 0;
+        }
+        
+        .probability-bar {
+            height: 40px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .probability-fill {
+            height: 100%;
+            transition: width 1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        
+        .prediction-text {
+            font-size: 1.5em;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 15px;
+            color: #2d3436;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+            font-size: 1.2em;
+            display: none;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .info-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .info-box h3 {
+            margin-bottom: 10px;
+            color: #2d3436;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Telco Churn Prediction</h1>
+            <p>Система предсказания оттока клиентов с помощью машинного обучения</p>
+        </div>
+        
+        <div class="content">
+            <div class="info-box">
+                <h3>Как использовать:</h3>
+                <p>Заполните форму данными клиента и нажмите "Предсказать отток". Модель проанализирует данные и покажет вероятность того, уйдёт ли клиент.</p>
+            </div>
+            
+            <form id="churnForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Пол (Gender)</label>
+                        <select name="gender" required>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Пожилой гражданин (SeniorCitizen)</label>
+                        <select name="SeniorCitizen" required>
+                            <option value="0">No</option>
+                            <option value="1">Yes</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Партнёр (Partner)</label>
+                        <select name="Partner" required>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Иждивенцы (Dependents)</label>
+                        <select name="Dependents" required>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Срок обслуживания (tenure, месяцев)</label>
+                        <input type="number" name="tenure" min="0" max="72" value="1" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Телефонная услуга (PhoneService)</label>
+                        <select name="PhoneService" required>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Несколько линий (MultipleLines)</label>
+                        <select name="MultipleLines" required>
+                            <option value="No phone service">No phone service</option>
+                            <option value="No">No</option>
+                            <option value="Yes">Yes</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Интернет-услуга (InternetService)</label>
+                        <select name="InternetService" required>
+                            <option value="DSL">DSL</option>
+                            <option value="Fiber optic">Fiber optic</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Онлайн-безопасность (OnlineSecurity)</label>
+                        <select name="OnlineSecurity" required>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                            <option value="No internet service">No internet service</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Онлайн-бэкап (OnlineBackup)</label>
+                        <select name="OnlineBackup" required>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                            <option value="No internet service">No internet service</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Защита устройств (DeviceProtection)</label>
+                        <select name="DeviceProtection" required>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                            <option value="No internet service">No internet service</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Техподдержка (TechSupport)</label>
+                        <select name="TechSupport" required>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                            <option value="No internet service">No internet service</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Стриминг ТВ (StreamingTV)</label>
+                        <select name="StreamingTV" required>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                            <option value="No internet service">No internet service</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Стриминг фильмов (StreamingMovies)</label>
+                        <select name="StreamingMovies" required>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                            <option value="No internet service">No internet service</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Контракт (Contract)</label>
+                        <select name="Contract" required>
+                            <option value="Month-to-month">Month-to-month</option>
+                            <option value="One year">One year</option>
+                            <option value="Two year">Two year</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Безбумажный биллинг (PaperlessBilling)</label>
+                        <select name="PaperlessBilling" required>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Способ оплаты (PaymentMethod)</label>
+                        <select name="PaymentMethod" required>
+                            <option value="Electronic check">Electronic check</option>
+                            <option value="Mailed check">Mailed check</option>
+                            <option value="Bank transfer (automatic)">Bank transfer (automatic)</option>
+                            <option value="Credit card (automatic)">Credit card (automatic)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Ежемесячная плата (MonthlyCharges)</label>
+                        <input type="number" name="MonthlyCharges" min="0" step="0.01" value="50.0" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Общая сумма (TotalCharges)</label>
+                        <input type="number" name="TotalCharges" min="0" step="0.01" value="500.0" required>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-predict"> Предсказать отток</button>
+            </form>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <div>Анализируем данные...</div>
+            </div>
+            
+            <div id="result" class="result">
+                <h2>Результат предсказания</h2>
+                <div class="probability-container">
+                    <div class="probability-bar">
+                        <div id="probBar" class="probability-fill"></div>
+                    </div>
+                    <p id="probText" style="text-align: center; margin-top: 10px; font-size: 1.2em; font-weight: bold;"></p>
+                </div>
+                <div id="prediction" class="prediction-text"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('churnForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            
+            // Преобразуем числовые поля
+            data.tenure = parseFloat(data.tenure);
+            data.MonthlyCharges = parseFloat(data.MonthlyCharges);
+            data.TotalCharges = parseFloat(data.TotalCharges);
+            data.SeniorCitizen = parseInt(data.SeniorCitizen);
+            
+            // Показываем индикатор загрузки
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+            
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                // Скрываем индикатор загрузки
+                document.getElementById('loading').style.display = 'none';
+                
+                // Отображаем результат
+                const resultDiv = document.getElementById('result');
+                const probBar = document.getElementById('probBar');
+                const prob = result.churn_probability * 100;
+                
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result ' + (result.churn_probability > 0.5 ? 'churn' : 'no-churn');
+                
+                probBar.style.width = prob + '%';
+                probBar.textContent = prob.toFixed(1) + '%';
+                
+                if (prob > 50) {
+                    probBar.style.background = 'linear-gradient(135deg, #fd79a8 0%, #d63031 100%)';
+                } else {
+                    probBar.style.background = 'linear-gradient(135deg, #55efc4 0%, #00b894 100%)';
+                }
+                
+                document.getElementById('probText').textContent = 
+                    `Вероятность оттока: ${prob.toFixed(1)}%`;
+                document.getElementById('prediction').textContent = 
+                    result.prediction;
+                    
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('loading').style.display = 'none';
+                alert('Произошла ошибка при получении предсказания. Попробуйте снова.');
+            }
+        });
+    </script>
+</body>
+</html>

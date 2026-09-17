@@ -10,7 +10,7 @@ WORKDIR /app
 COPY requirements_api.txt .
 
 # RUN выполняет команду внутри контейнера.
-RUN pip install --no-cache-dir -r requirements_api.txt
+RUN pip install --no-cache-dir --default-timeout=1000 -r requirements_api.txt --extra-index-url https://download.pytorch.org/whl/cpu
 
 # COPY . . копирует ВСЕ файлы из текущей папки на твоем Mac в папку /app внутри контейнера.
 COPY . .
