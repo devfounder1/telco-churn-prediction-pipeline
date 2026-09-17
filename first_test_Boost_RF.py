@@ -10,6 +10,7 @@ from sklearn.metrics import roc_auc_score
 import optuna
 from catboost import CatBoostClassifier
 from sklearn.ensemble import RandomForestClassifier
+import joblib
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s : %(message)s')
 np.random.seed(42)
@@ -62,6 +63,9 @@ preprocessor = ColumnTransformer(
 x_train_processed = preprocessor.fit_transform(x_train)
 x_val_processed = preprocessor.transform(x_val)
 x_test_processed = preprocessor.transform(x_test)
+
+joblib.dump(preprocessor, "preprocessor.pkl")
+logging.info("Preprocessor успешно загружен !")
 
 logging.info(f"Размер X_train после обработки : {x_train_processed.shape}")
 logging.info(f"Размер X_val после обработки : {x_val_processed.shape}")
