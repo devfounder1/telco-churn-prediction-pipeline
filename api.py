@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
 import onnx
 import joblib
@@ -6,6 +6,8 @@ import logging
 import torch
 import torch.nn as nn 
 import pandas as pd
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s : %(message)s')
 
@@ -14,6 +16,8 @@ app = FastAPI(
     description='End-to-end машинное обучение пайплайн для предсказания оттока клиентов телеком-компании.',
     version='1.0.0'
 )
+
+templates = Jinja2Templates(directory="app/templates")
 
 class TabularMLP(nn.Module):
     def __init__(self):
@@ -32,18 +36,18 @@ class TabularMLP(nn.Module):
     
 logging.info("Загрука процессора и модели")
 try: 
-    preprocessor = joblib.load("preprocessor.pkl")
+    preprocessor = joblib.load("models/preprocessor.pkl")
     
     model = TabularMLP()
     
-    model.load_state_dict(torch.load("BestModel_MLP.pth", map_location='cpu', weights_only=True))
+    model.load_state_dict(torch.load("models/BestModel_MLP.pth", map_location='cpu', weights_only=True))
     model.eval()
     
     logging.info("Все артефакты успешно загружены! ")
     
 except Exception as e: 
-    logging.info("Произошла ошибка загрузки артефактов !")
-    raise e
+    logging.info(f"Произошла ошибка загрузки артефактов : {e} !")
+    raise
 
 class CustomerData(BaseModel):
     gender: str
@@ -66,18 +70,15 @@ class CustomerData(BaseModel):
     MonthlyCharges: float
     TotalCharges: float
 
-@app.post("/Predict")
+@app.post("/predict")
 async def predict_churn(customer : CustomerData):
     try: 
         df_new = pd.DataFrame([customer.model_dump()])
-
         X_processed = preprocessor.transform(df_new)
-        
         input_tensor = torch.tensor(X_processed, dtype=torch.float32)
         
         with torch.no_grad():
             logit = model(input_tensor)
-            
             churn_probability = torch.sigmoid(logit).item()
         
         prediction_label = "Churn уйдет" if churn_probability > 0.5 else "No churn (останется)"
@@ -92,6 +93,10 @@ async def predict_churn(customer : CustomerData):
         logging.error("Ошибка в генерации предсказания!!!")
         raise HTTPException(status_code=500, detail=f"Внутренняя ошибка сервера : {e}")
 
+@app.get("/", response_class=HTMLResponse)
+async def read_root(request : Request):
+    return templates.TemplateResponse("index.html", {"request" : request})
+
 @app.get("/health")
 async def check_health():
-    return{"status" : "ok", "model_loaded" : True}
+    return {"status" : "ok", "model_loaded" : True}

@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.vscode/
+catboost_info/
+*.pth
+*.pkl
+*.onnx
+*.onnx.data
+models/
+.env
