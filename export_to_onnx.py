@@ -51,7 +51,8 @@ torch.onnx.export(
     dynamic_axes={
         'input_features' : {0 : 'batch_size'},
         'churn_logits' : {0 : 'batch_size'}
-    } 
+    },
+    dynamo=False
 )
 
 logging.info(f"Модель успешно экспортирована в {onnx_file_path} !!!")
