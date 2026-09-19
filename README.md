@@ -98,6 +98,20 @@ docker run -p 8000:8000 churn-api
 Откройте http://127.0.0.1:8000 в браузере.
 ```
 
+## 🖥️ Демонстрация интерфейса
+
+<p align="center">
+  <img src="assets/ui_main_screen.png" alt="Главный экран приложения" width="800">
+  <br>
+  <em>Главный экран веб-интерфейса с группировкой полей и анимациями</em>
+</p>
+
+<p align="center">
+  <img src="assets/ui_prediction_result.png" alt="Результат предсказания" width="800">
+  <br>
+  <em>Визуализация вероятности оттока с цветовой индикацией риска</em>
+</p>
+
 ## API Документация
 
 ### `POST /predict`
