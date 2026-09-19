@@ -86,6 +86,7 @@ pip install -r requirements_api.txt
 
 # 4. Запустите API
 uvicorn api:app --reload --host 0.0.0.0 --port 8000
+
 Откройте http://127.0.0.1:8000 для веб-интерфейса или http://127.0.0.1:8000/docs для Swagger UI.
 ```
 
@@ -183,10 +184,13 @@ Content-Type: application/json
 <details>
 <summary><b>Нажми, чтобы развернуть полный пример JSON (19 признаков)</b></summary>
 
-```json
+```bash
 curl -X POST "http://127.0.0.1:8000/predict" \
   -H "Content-Type: application/json" \
-  -d '{
+  -d '{ ... }'
+```
+
+```json
     "gender": "Female",
     "tenure": 1,
     "Contract": "Month-to-month",
