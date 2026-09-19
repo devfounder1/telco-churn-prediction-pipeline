@@ -176,6 +176,11 @@ Content-Type: application/json
 ## Тестирование
 
 ### Тест с "рискованным" клиентом
+**Request Body:**
+<details>
+<summary><b>Нажми, чтобы развернуть полный пример JSON (19 признаков)</b></summary>
+
+```json
 curl -X POST "http://127.0.0.1:8000/predict" \
   -H "Content-Type: application/json" \
   -d '{
@@ -199,6 +204,8 @@ curl -X POST "http://127.0.0.1:8000/predict" \
     "StreamingMovies": "Yes",
     "PaperlessBilling": "Yes"
   }'
+```
+</details>
 
 ## Технологии
 ### Core ML
