@@ -191,6 +191,7 @@ curl -X POST "http://127.0.0.1:8000/predict" \
 ```
 
 ```json
+{
     "gender": "Female",
     "tenure": 1,
     "Contract": "Month-to-month",
@@ -210,7 +211,7 @@ curl -X POST "http://127.0.0.1:8000/predict" \
     "StreamingTV": "Yes",
     "StreamingMovies": "Yes",
     "PaperlessBilling": "Yes"
-  }'
+  }
 ```
 </details>
 
