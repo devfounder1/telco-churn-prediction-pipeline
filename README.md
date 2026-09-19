@@ -25,25 +25,26 @@
 - **Красивый веб-интерфейс** на FastAPI + HTML/CSS/JS
 - **REST API** с Swagger-документацией
 
-## Структура проекта
+## 📁 Структура проекта
 
+```text
 pet_project1/
 ├── app/
-│ └── templates/
-│    └── index.html # Веб-интерфейс (Dark Mode UI)
+│   └── templates/
+│       └── index.html              # Премиальный Dark Mode UI для инференса
 ├── models/
-│ ├── BestModel_MLP.pth # Веса PyTorch модели
-│ ├── preprocessor.pkl # Scikit-learn ColumnTransformer
-│ └── churn_mlp.onnx # ONNX экспорт
+│   ├── BestModel_MLP.pth           # Веса лучшей PyTorch модели (Early Stopping)
+│   ├── preprocessor.pkl            # Scikit-learn ColumnTransformer для новых данных
+│   └── churn_mlp.onnx              # Экспортированная модель для кросс-платформенности
 ├── src/
-│ ├── first_test_Boost_RF.py # Обучение CatBoost + Optuna
-│ ├── second_test_MLP.py # Обучение PyTorch MLP
-│ └── export_to_onnx.py # Экспорт в ONNX
-├── api.py # FastAPI приложение
-├── Dockerfile # Docker конфигурация
-├── requirements_api.txt # Зависимости для деплоя
-└── README.md # Документация
-
+│   ├── first_test_Boost_RF.py      # Пайплайн: CatBoost + Optuna (Hyperparameter Tuning)
+│   ├── second_test_MLP.py          # Пайплайн: PyTorch MLP + pos_weight
+│   └── export_to_onnx.py           # Скрипт конвертации .pth в .onnx
+├── api.py                          # Точка входа FastAPI приложения
+├── Dockerfile                      # Инструкция для сборки production-контейнера
+├── requirements_api.txt            # Минимальные зависимости для деплоя
+└── README.md                       # Это документация
+```
 
 ## Результаты моделей
 
@@ -99,10 +100,19 @@ docker run -p 8000:8000 churn-api
 
 ## API Документация
 
-### POST /predict
-Предсказание вероятности оттока клиента.
-Request Body:
+### `POST /predict`
+Принимает данные клиента и возвращает вероятность оттока.
 
+**Request Headers:**
+```http
+Content-Type: application/json
+```
+
+**Request Body:**
+<details>
+<summary><b>Нажми, чтобы развернуть полный пример JSON (19 признаков)</b></summary>
+
+```json
 {
   "gender": "Female",
   "SeniorCitizen": 0,
@@ -124,23 +134,30 @@ Request Body:
   "MonthlyCharges": 75.5,
   "TotalCharges": 75.5
 }
+```
+</details>
 
-### Response:
-
+**Response (`200 OK`):**
+```json
 {
   "churn_probability": 0.8663,
   "prediction": "Churn (уйдет)",
   "message": "Предсказание успешно сгенерировано"
 }
+```
 
-### GET /health
-Проверка работоспособности сервиса.
+---
 
-### Response:
+### `GET /health`
+Эндпоинт для проверки работоспособности сервиса (Liveness Probe).
+
+**Response (`200 OK`):**
+```json
 {
   "status": "ok",
   "model_loaded": true
 }
+```
 
 ## Тестирование
 
