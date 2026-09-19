@@ -133,7 +133,7 @@ Request Body:
   "message": "Предсказание успешно сгенерировано"
 }
 
-## GET /health
+### GET /health
 Проверка работоспособности сервиса.
 
 ### Response:
@@ -144,7 +144,7 @@ Request Body:
 
 ## Тестирование
 
-# Тест с "рискованным" клиентом
+### Тест с "рискованным" клиентом
 curl -X POST "http://127.0.0.1:8000/predict" \
   -H "Content-Type: application/json" \
   -d '{
@@ -171,20 +171,20 @@ curl -X POST "http://127.0.0.1:8000/predict" \
 
 ## Технологии
 ### Core ML
-**Scikit-learn:** ColumnTransformer, Pipeline, OneHotEncoder, StandardScaler
-**CatBoost:** Градиентный бустинг с обработкой категориальных признаков
-**Optuna:** Байесовская оптимизация гиперпараметров
-**PyTorch:** Нейросети с BCEWithLogitsLoss, pos_weight, Early Stopping
+- **Scikit-learn:** ColumnTransformer, Pipeline, OneHotEncoder, StandardScaler
+- **CatBoost:** Градиентный бустинг с обработкой категориальных признаков
+- **Optuna:** Байесовская оптимизация гиперпараметров
+- **PyTorch:** Нейросети с BCEWithLogitsLoss, pos_weight, Early Stopping
 ### Деплой
-**FastAPI:** Асинхронный веб-фреймворк
-**Uvicorn:** ASGI сервер
-**Pydantic:** Валидация данных
-**ONNX:** Универсальный формат моделей
-**Docker:** Контейнеризация
+- **FastAPI:** Асинхронный веб-фреймворк
+- **Uvicorn:** ASGI сервер
+- **Pydantic:** Валидация данных
+- **ONNX:** Универсальный формат моделей
+- **Docker:** Контейнеризация
 ### Frontend
-**HTML5/CSS3:** Современный Dark Mode UI
-**JavaScript:** Асинхронные запросы к API
-**Jinja2:** Шаблонизация (опционально)
+- **HTML5/CSS3:** Современный Dark Mode UI
+- **JavaScript:** Асинхронные запросы к API
+- **Jinja2:** Шаблонизация (опционально)
 
 ## Ключевые инженерные решения
 - **Защита от data leakage:** ColumnTransformer обучается только на train, применяется к val/test через transform()
