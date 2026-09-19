@@ -25,7 +25,7 @@
 - **Красивый веб-интерфейс** на FastAPI + HTML/CSS/JS
 - **REST API** с Swagger-документацией
 
-## 📁 Структура проекта
+## Структура проекта
 
 ```text
 pet_project1/
@@ -40,6 +40,9 @@ pet_project1/
 │   ├── first_test_Boost_RF.py      # Пайплайн: CatBoost + Optuna (Hyperparameter Tuning)
 │   ├── second_test_MLP.py          # Пайплайн: PyTorch MLP + pos_weight
 │   └── export_to_onnx.py           # Скрипт конвертации .pth в .onnx
+├──assets/
+│   ├── ui_main_screen.png
+│   ├── ui_prediction_result.png
 ├── api.py                          # Точка входа FastAPI приложения
 ├── Dockerfile                      # Инструкция для сборки production-контейнера
 ├── requirements_api.txt            # Минимальные зависимости для деплоя
@@ -98,7 +101,7 @@ docker run -p 8000:8000 churn-api
 Откройте http://127.0.0.1:8000 в браузере.
 ```
 
-## 🖥️ Демонстрация интерфейса
+## Демонстрация интерфейса
 
 <p align="center">
   <img src="assets/ui_main_screen.png" alt="Главный экран приложения" width="800">
