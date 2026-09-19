@@ -3,360 +3,417 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telco Churn Prediction</title>
+    <title>Telco Churn AI | Предсказание оттока</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --bg-dark: #09090b;
+            --card-bg: rgba(24, 24, 27, 0.6);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-primary: #fafafa;
+            --text-secondary: #a1a1aa;
+            --accent: #8b5cf6;
+            --accent-glow: rgba(139, 92, 246, 0.4);
+            --danger: #ef4444;
+            --success: #10b981;
         }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
             min-height: 100vh;
-            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Анимированный фоновый градиент */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.15), transparent 40%),
+                        radial-gradient(circle at 80% 20%, rgba(6, 182, 212, 0.1), transparent 40%);
+            animation: meshMove 20s ease-in-out infinite alternate;
+            z-index: -1;
+        }
+
+        @keyframes meshMove {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(-20px, -20px) rotate(5deg); }
         }
         
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 900px;
+            background: var(--card-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            box-shadow: 0 32px 64px -12px rgba(0, 0, 0, 0.6);
             overflow: hidden;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
+            padding: 40px 40px 20px;
             text-align: center;
+            border-bottom: 1px solid var(--border-color);
         }
         
         .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
+            font-size: 2.2em;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 0%, #a1a1aa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+            letter-spacing: -0.03em;
         }
         
         .header p {
-            font-size: 1.1em;
-            opacity: 0.9;
+            color: var(--text-secondary);
+            font-size: 1.05em;
         }
         
-        .content {
-            padding: 40px;
+        .content { padding: 40px; }
+        
+        .section-title {
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            margin: 30px 0 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
+        .section-title:first-child { margin-top: 0; }
+
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 20px;
-            margin-bottom: 30px;
         }
         
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
+        .form-group { position: relative; }
         
         .form-group label {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 8px;
-            font-size: 0.9em;
+            display: block;
+            font-size: 0.85em;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            font-weight: 500;
         }
         
         .form-group input,
         .form-group select {
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: border-color 0.3s;
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 0.95em;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            appearance: none;
+        }
+        
+        .form-group select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23a1a1aa' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
         }
         
         .form-group input:focus,
         .form-group select:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+            background: rgba(0, 0, 0, 0.5);
         }
         
         .btn-predict {
             width: 100%;
-            padding: 18px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin-top: 30px;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%);
             color: white;
             border: none;
-            border-radius: 8px;
-            font-size: 1.2em;
+            border-radius: 14px;
+            font-size: 1.1em;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
         
+        .btn-predict::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn-predict:hover::before { left: 100%; }
         .btn-predict:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
-        }
-        
-        .btn-predict:active {
-            transform: translateY(0);
-        }
-        
-        .result {
-            margin-top: 30px;
-            padding: 30px;
-            border-radius: 10px;
-            display: none;
-            animation: slideIn 0.5s ease;
-        }
-        
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .result.churn {
-            background: linear-gradient(135deg, #ffeaa7 0%, #fd79a8 100%);
-            border-left: 5px solid #d63031;
-        }
-        
-        .result.no-churn {
-            background: linear-gradient(135deg, #55efc4 0%, #00b894 100%);
-            border-left: 5px solid #00b894;
-        }
-        
-        .result h2 {
-            margin-bottom: 20px;
-            color: #2d3436;
-        }
-        
-        .probability-container {
-            margin: 20px 0;
-        }
-        
-        .probability-bar {
-            height: 40px;
-            background: rgba(255,255,255,0.3);
-            border-radius: 20px;
-            overflow: hidden;
-            position: relative;
-        }
-        
-        .probability-fill {
-            height: 100%;
-            transition: width 1s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 1.1em;
-        }
-        
-        .prediction-text {
-            font-size: 1.5em;
-            font-weight: bold;
-            text-align: center;
-            margin-top: 15px;
-            color: #2d3436;
+            box-shadow: 0 12px 32px -8px var(--accent-glow);
         }
         
         .loading {
             text-align: center;
-            padding: 20px;
-            color: #667eea;
-            font-size: 1.2em;
+            padding: 40px;
             display: none;
         }
         
         .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
+            width: 40px; height: 40px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: var(--accent);
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
         }
         
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .result {
+            margin-top: 30px;
+            padding: 30px;
+            border-radius: 16px;
+            display: none;
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid transparent;
         }
         
-        .info-box {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-            border-left: 4px solid #667eea;
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
         
-        .info-box h3 {
-            margin-bottom: 10px;
-            color: #2d3436;
+        .result.churn {
+            background: rgba(239, 68, 68, 0.08);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+        
+        .result.no-churn {
+            background: rgba(16, 185, 129, 0.08);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+        
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.4em;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+        
+        .result.churn .result-header { color: #fca5a5; }
+        .result.no-churn .result-header { color: #6ee7b7; }
+        
+        .probability-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+        
+        .probability-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 0 12px currentColor;
+        }
+        
+        .result.churn .probability-fill { background: var(--danger); color: var(--danger); }
+        .result.no-churn .probability-fill { background: var(--success); color: var(--success); }
+        
+        .prob-text {
+            text-align: right;
+            font-size: 0.9em;
+            color: var(--text-secondary);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .prediction-verdict {
+            text-align: center;
+            font-size: 1.1em;
+            color: var(--text-primary);
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        @media (max-width: 640px) {
+            .content { padding: 24px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .header h1 { font-size: 1.8em; }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Telco Churn Prediction</h1>
-            <p>Система предсказания оттока клиентов с помощью машинного обучения</p>
+            <h1>📡 Telco Churn AI</h1>
+            <p>Интеллектуальная система предсказания оттока клиентов в реальном времени</p>
         </div>
         
         <div class="content">
-            <div class="info-box">
-                <h3>Как использовать:</h3>
-                <p>Заполните форму данными клиента и нажмите "Предсказать отток". Модель проанализирует данные и покажет вероятность того, уйдёт ли клиент.</p>
-            </div>
-            
             <form id="churnForm">
+                <div class="section-title">Демография</div>
                 <div class="form-grid">
                     <div class="form-group">
-                        <label>Пол (Gender)</label>
+                        <label>Пол</label>
                         <select name="gender" required>
                             <option value="Male">Male</option>
                             <option value="Female">Female</option>
                         </select>
                     </div>
-                    
                     <div class="form-group">
-                        <label>Пожилой гражданин (SeniorCitizen)</label>
+                        <label>Пожилой гражданин</label>
                         <select name="SeniorCitizen" required>
                             <option value="0">No</option>
                             <option value="1">Yes</option>
                         </select>
                     </div>
-                    
                     <div class="form-group">
-                        <label>Партнёр (Partner)</label>
+                        <label>Партнёр</label>
                         <select name="Partner" required>
                             <option value="Yes">Yes</option>
                             <option value="No">No</option>
                         </select>
                     </div>
-                    
                     <div class="form-group">
-                        <label>Иждивенцы (Dependents)</label>
+                        <label>Иждивенцы</label>
                         <select name="Dependents" required>
                             <option value="Yes">Yes</option>
                             <option value="No">No</option>
                         </select>
                     </div>
-                    
+                </div>
+
+                <div class="section-title">Услуги и контракт</div>
+                <div class="form-grid">
                     <div class="form-group">
-                        <label>Срок обслуживания (tenure, месяцев)</label>
+                        <label>Срок обслуживания (мес.)</label>
                         <input type="number" name="tenure" min="0" max="72" value="1" required>
                     </div>
-                    
                     <div class="form-group">
-                        <label>Телефонная услуга (PhoneService)</label>
-                        <select name="PhoneService" required>
-                            <option value="Yes">Yes</option>
-                            <option value="No">No</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Несколько линий (MultipleLines)</label>
-                        <select name="MultipleLines" required>
-                            <option value="No phone service">No phone service</option>
-                            <option value="No">No</option>
-                            <option value="Yes">Yes</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Интернет-услуга (InternetService)</label>
-                        <select name="InternetService" required>
-                            <option value="DSL">DSL</option>
-                            <option value="Fiber optic">Fiber optic</option>
-                            <option value="No">No</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Онлайн-безопасность (OnlineSecurity)</label>
-                        <select name="OnlineSecurity" required>
-                            <option value="Yes">Yes</option>
-                            <option value="No">No</option>
-                            <option value="No internet service">No internet service</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Онлайн-бэкап (OnlineBackup)</label>
-                        <select name="OnlineBackup" required>
-                            <option value="Yes">Yes</option>
-                            <option value="No">No</option>
-                            <option value="No internet service">No internet service</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Защита устройств (DeviceProtection)</label>
-                        <select name="DeviceProtection" required>
-                            <option value="Yes">Yes</option>
-                            <option value="No">No</option>
-                            <option value="No internet service">No internet service</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Техподдержка (TechSupport)</label>
-                        <select name="TechSupport" required>
-                            <option value="Yes">Yes</option>
-                            <option value="No">No</option>
-                            <option value="No internet service">No internet service</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Стриминг ТВ (StreamingTV)</label>
-                        <select name="StreamingTV" required>
-                            <option value="Yes">Yes</option>
-                            <option value="No">No</option>
-                            <option value="No internet service">No internet service</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Стриминг фильмов (StreamingMovies)</label>
-                        <select name="StreamingMovies" required>
-                            <option value="Yes">Yes</option>
-                            <option value="No">No</option>
-                            <option value="No internet service">No internet service</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Контракт (Contract)</label>
+                        <label>Тип контракта</label>
                         <select name="Contract" required>
                             <option value="Month-to-month">Month-to-month</option>
                             <option value="One year">One year</option>
                             <option value="Two year">Two year</option>
                         </select>
                     </div>
-                    
                     <div class="form-group">
-                        <label>Безбумажный биллинг (PaperlessBilling)</label>
+                        <label>Телефонная услуга</label>
+                        <select name="PhoneService" required>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Несколько линий</label>
+                        <select name="MultipleLines" required>
+                            <option value="No phone service">No phone service</option>
+                            <option value="No">No</option>
+                            <option value="Yes">Yes</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Интернет-услуга</label>
+                        <select name="InternetService" required>
+                            <option value="DSL">DSL</option>
+                            <option value="Fiber optic">Fiber optic</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Онлайн-безопасность</label>
+                        <select name="OnlineSecurity" required>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                            <option value="No internet service">No internet service</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Онлайн-бэкап</label>
+                        <select name="OnlineBackup" required>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                            <option value="No internet service">No internet service</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Защита устройств</label>
+                        <select name="DeviceProtection" required>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                            <option value="No internet service">No internet service</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Техподдержка</label>
+                        <select name="TechSupport" required>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                            <option value="No internet service">No internet service</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Стриминг ТВ</label>
+                        <select name="StreamingTV" required>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                            <option value="No internet service">No internet service</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Стриминг фильмов</label>
+                        <select name="StreamingMovies" required>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                            <option value="No internet service">No internet service</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Безбумажный биллинг</label>
                         <select name="PaperlessBilling" required>
                             <option value="Yes">Yes</option>
                             <option value="No">No</option>
                         </select>
                     </div>
-                    
+                </div>
+
+                <div class="section-title">Финансы</div>
+                <div class="form-grid">
                     <div class="form-group">
-                        <label>Способ оплаты (PaymentMethod)</label>
+                        <label>Способ оплаты</label>
                         <select name="PaymentMethod" required>
                             <option value="Electronic check">Electronic check</option>
                             <option value="Mailed check">Mailed check</option>
@@ -364,35 +421,31 @@
                             <option value="Credit card (automatic)">Credit card (automatic)</option>
                         </select>
                     </div>
-                    
                     <div class="form-group">
-                        <label>Ежемесячная плата (MonthlyCharges)</label>
+                        <label>Ежемесячная плата ($)</label>
                         <input type="number" name="MonthlyCharges" min="0" step="0.01" value="50.0" required>
                     </div>
-                    
                     <div class="form-group">
-                        <label>Общая сумма (TotalCharges)</label>
+                        <label>Общая сумма ($)</label>
                         <input type="number" name="TotalCharges" min="0" step="0.01" value="500.0" required>
                     </div>
                 </div>
                 
-                <button type="submit" class="btn-predict"> Предсказать отток</button>
+                <button type="submit" class="btn-predict">Запустить предсказание</button>
             </form>
             
             <div class="loading" id="loading">
                 <div class="spinner"></div>
-                <div>Анализируем данные...</div>
+                <div style="color: var(--text-secondary);">Нейросеть анализирует данные...</div>
             </div>
             
             <div id="result" class="result">
-                <h2>Результат предсказания</h2>
-                <div class="probability-container">
-                    <div class="probability-bar">
-                        <div id="probBar" class="probability-fill"></div>
-                    </div>
-                    <p id="probText" style="text-align: center; margin-top: 10px; font-size: 1.2em; font-weight: bold;"></p>
+                <div class="result-header" id="resultTitle">📊 Результат</div>
+                <div class="probability-bar">
+                    <div id="probBar" class="probability-fill" style="width: 0%"></div>
                 </div>
-                <div id="prediction" class="prediction-text"></div>
+                <div class="prob-text" id="probText">Вероятность: 0%</div>
+                <div class="prediction-verdict" id="prediction"></div>
             </div>
         </div>
     </div>
@@ -404,13 +457,11 @@
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData);
             
-            // Преобразуем числовые поля
             data.tenure = parseFloat(data.tenure);
             data.MonthlyCharges = parseFloat(data.MonthlyCharges);
             data.TotalCharges = parseFloat(data.TotalCharges);
             data.SeniorCitizen = parseInt(data.SeniorCitizen);
             
-            // Показываем индикатор загрузки
             document.getElementById('loading').style.display = 'block';
             document.getElementById('result').style.display = 'none';
             
@@ -423,30 +474,24 @@
                 
                 const result = await response.json();
                 
-                // Скрываем индикатор загрузки
                 document.getElementById('loading').style.display = 'none';
                 
-                // Отображаем результат
                 const resultDiv = document.getElementById('result');
                 const probBar = document.getElementById('probBar');
                 const prob = result.churn_probability * 100;
                 
+                const isChurn = result.churn_probability > 0.5;
+                resultDiv.className = 'result ' + (isChurn ? 'churn' : 'no-churn');
                 resultDiv.style.display = 'block';
-                resultDiv.className = 'result ' + (result.churn_probability > 0.5 ? 'churn' : 'no-churn');
                 
-                probBar.style.width = prob + '%';
-                probBar.textContent = prob.toFixed(1) + '%';
+                // Небольшая задержка для плавной анимации полосы
+                setTimeout(() => {
+                    probBar.style.width = prob + '%';
+                }, 100);
                 
-                if (prob > 50) {
-                    probBar.style.background = 'linear-gradient(135deg, #fd79a8 0%, #d63031 100%)';
-                } else {
-                    probBar.style.background = 'linear-gradient(135deg, #55efc4 0%, #00b894 100%)';
-                }
-                
-                document.getElementById('probText').textContent = 
-                    `Вероятность оттока: ${prob.toFixed(1)}%`;
-                document.getElementById('prediction').textContent = 
-                    result.prediction;
+                document.getElementById('probText').textContent = `Вероятность оттока: ${prob.toFixed(1)}%`;
+                document.getElementById('prediction').textContent = result.prediction;
+                document.getElementById('resultTitle').innerHTML = isChurn ? '⚠️ Высокий риск оттока' : '✅ Клиент лоялен';
                     
             } catch (error) {
                 console.error('Error:', error);

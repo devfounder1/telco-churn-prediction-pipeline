@@ -6,8 +6,9 @@ import logging
 import torch
 import torch.nn as nn 
 import pandas as pd
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.templating import Jinja2Templates
+from jinja2 import Environment, FileSystemLoader
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s : %(message)s')
 
@@ -16,8 +17,6 @@ app = FastAPI(
     description='End-to-end машинное обучение пайплайн для предсказания оттока клиентов телеком-компании.',
     version='1.0.0'
 )
-
-templates = Jinja2Templates(directory="app/templates")
 
 class TabularMLP(nn.Module):
     def __init__(self):
@@ -81,11 +80,11 @@ async def predict_churn(customer : CustomerData):
             logit = model(input_tensor)
             churn_probability = torch.sigmoid(logit).item()
         
-        prediction_label = "Churn уйдет" if churn_probability > 0.5 else "No churn (останется)"
+        prediction_label = "Churn (уйдет)" if churn_probability > 0.5 else "No churn (останется)"
         
         return{
             "churn_probability" : round(churn_probability, 4),
-            "Prediction" : prediction_label,
+            "prediction" : prediction_label,
             "message" : "Предсказание успешно сгенерированно"
         }
         
@@ -95,7 +94,7 @@ async def predict_churn(customer : CustomerData):
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request : Request):
-    return templates.TemplateResponse("index.html", {"request" : request})
+    return FileResponse("app/templates/index.html")
 
 @app.get("/health")
 async def check_health():
